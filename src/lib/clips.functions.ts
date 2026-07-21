@@ -95,7 +95,7 @@ export const advanceClip = createServerFn({ method: "POST" })
     else if (age < 5.5) { status = "posting"; progress = 92; }
     else { status = "done"; progress = 100; }
 
-    const patch: Record<string, unknown> = { status, progress };
+    const patch: { status: typeof status; progress: number; output_url?: string } = { status, progress };
     if (status === "done") {
       patch.output_url = `https://cdn.hash.local/clips/${row.id}.mp4`;
     }

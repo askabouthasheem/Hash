@@ -39,7 +39,7 @@ import {
   DownloadSimple,
 } from "@phosphor-icons/react";
 
-export const Route = createFileRoute("/app")({
+export const Route = createFileRoute("/_authenticated/app")({
   component: AppShell,
   head: () => ({
     meta: [
