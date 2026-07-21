@@ -67,18 +67,22 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       {
         name: "description",
         content:
-          "Hash is the live-clipping deck for creators. Grab the last 60 seconds of any Twitch, Kick or YouTube stream, auto-format vertical, burn captions, ship to TikTok — while the streamer is still live.",
+          "Hash is the live-clipping deck for creators. Snatch the last 60s of any Twitch, Kick or YouTube stream, auto-caption vertical, ship straight to TikTok.",
       },
       { name: "author", content: "Hash" },
       { name: "theme-color", content: "#141516" },
-      { property: "og:title", content: "Hash — Live Snatch for streamers" },
+      { property: "og:title", content: "Hash — Clip livestreams the second they pop off" },
       {
         property: "og:description",
         content:
-          "Snatch, caption and post viral clips from any live stream in under 30 seconds.",
+          "Hash is the live-clipping deck for creators. Snatch the last 60s of any Twitch, Kick or YouTube stream, auto-caption vertical, ship straight to TikTok.",
       },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
+      { name: "twitter:title", content: "Hash — Clip livestreams the second they pop off" },
+      { name: "twitter:description", content: "Hash is the live-clipping deck for creators. Snatch the last 60s of any Twitch, Kick or YouTube stream, auto-caption vertical, ship straight to TikTok." },
+      { property: "og:image", content: "https://storage.googleapis.com/gpt-engineer-file-uploads/attachments/og-images/86bc2278-68cc-4fe3-ba16-c771c4fe4b1f" },
+      { name: "twitter:image", content: "https://storage.googleapis.com/gpt-engineer-file-uploads/attachments/og-images/86bc2278-68cc-4fe3-ba16-c771c4fe4b1f" },
     ],
     links: [
       { rel: "stylesheet", href: appCss },
