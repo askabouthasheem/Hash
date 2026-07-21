@@ -1,6 +1,9 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
-import { Hash as HashIcon, TwitchLogo, GoogleLogo, ArrowRight, Eye, EyeSlash } from "@phosphor-icons/react";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { Hash as HashIcon, GoogleLogo, ArrowRight, Eye, EyeSlash, CircleNotch } from "@phosphor-icons/react";
 import { useState } from "react";
+import { supabase } from "@/integrations/supabase/client";
+import { lovable } from "@/integrations/lovable";
+import { toast } from "sonner";
 
 export const Route = createFileRoute("/login")({
   component: LoginPage,
@@ -18,11 +21,67 @@ function LoginPage() {
 
 export function AuthShell({ mode }: { mode: "login" | "signup" }) {
   const [show, setShow] = useState(false);
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [name, setName] = useState("");
+  const [busy, setBusy] = useState(false);
+  const [googleBusy, setGoogleBusy] = useState(false);
+  const navigate = useNavigate();
   const isLogin = mode === "login";
+
+  async function handleEmail(e: React.FormEvent) {
+    e.preventDefault();
+    if (busy) return;
+    setBusy(true);
+    try {
+      if (isLogin) {
+        const { error } = await supabase.auth.signInWithPassword({ email, password });
+        if (error) throw error;
+        toast.success("Welcome back");
+        navigate({ to: "/app" });
+      } else {
+        const { data, error } = await supabase.auth.signUp({
+          email,
+          password,
+          options: {
+            data: { display_name: name || email.split("@")[0] },
+            emailRedirectTo: `${window.location.origin}/app`,
+          },
+        });
+        if (error) throw error;
+        if (data.session) {
+          toast.success("Account created");
+          navigate({ to: "/app" });
+        } else {
+          toast.success("Check your email to confirm.");
+        }
+      }
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Something went wrong");
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  async function handleGoogle() {
+    if (googleBusy) return;
+    setGoogleBusy(true);
+    try {
+      const result = await lovable.auth.signInWithOAuth("google", {
+        redirect_uri: window.location.origin,
+      });
+      if (result.error) throw result.error instanceof Error ? result.error : new Error(String(result.error));
+      if (result.redirected) return;
+      navigate({ to: "/app" });
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Google sign-in failed");
+    } finally {
+      setGoogleBusy(false);
+    }
+  }
 
   return (
     <div className="grid min-h-screen bg-background lg:grid-cols-2">
-      {/* Left visual */}
       <aside className="relative hidden overflow-hidden border-r border-border lg:block">
         <div aria-hidden className="absolute inset-0" style={{
           background: "radial-gradient(80% 60% at 20% 20%, oklch(0.35 0.14 300 / 0.7), transparent 60%), radial-gradient(80% 60% at 90% 90%, oklch(0.9 0.19 122 / 0.35), transparent 60%), linear-gradient(180deg, oklch(0.16 0.02 260), oklch(0.13 0.02 260))"
@@ -59,7 +118,6 @@ export function AuthShell({ mode }: { mode: "login" | "signup" }) {
         </div>
       </aside>
 
-      {/* Right form */}
       <main className="flex flex-col">
         <div className="flex items-center justify-between px-6 py-5 lg:hidden">
           <Link to="/" className="flex items-center gap-2">
@@ -82,15 +140,13 @@ export function AuthShell({ mode }: { mode: "login" | "signup" }) {
             <p className="mt-3 text-sm text-muted-foreground">
               {isLogin
                 ? "Pick up where you left off — your deck's still warm."
-                : "No card required. 30 free clips a month, forever."}
+                : "No card required. Start clipping instantly."}
             </p>
 
             <div className="mt-8 grid gap-2">
-              <button className="btn-ghost h-11 w-full">
-                <TwitchLogo weight="fill" size={16} /> Continue with Twitch
-              </button>
-              <button className="btn-ghost h-11 w-full">
-                <GoogleLogo weight="bold" size={16} /> Continue with Google
+              <button onClick={handleGoogle} disabled={googleBusy} className="btn-ghost h-11 w-full">
+                {googleBusy ? <CircleNotch className="animate-spin" size={16} /> : <GoogleLogo weight="bold" size={16} />}
+                Continue with Google
               </button>
             </div>
 
@@ -98,21 +154,26 @@ export function AuthShell({ mode }: { mode: "login" | "signup" }) {
               <span className="h-px flex-1 bg-border" /> or <span className="h-px flex-1 bg-border" />
             </div>
 
-            <form className="grid gap-4" onSubmit={(e) => e.preventDefault()}>
+            <form className="grid gap-4" onSubmit={handleEmail}>
               {!isLogin && (
                 <Field label="Display name">
-                  <input className="input" placeholder="clipmaster_9000" />
+                  <input className="input" value={name} onChange={(e) => setName(e.target.value)} placeholder="clipmaster_9000" />
                 </Field>
               )}
               <Field label="Email">
-                <input className="input" type="email" placeholder="you@studio.gg" />
+                <input className="input" required type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="you@studio.gg" />
               </Field>
-              <Field
-                label="Password"
-                right={isLogin ? <a href="#" className="text-xs text-muted-foreground hover:text-foreground">Forgot?</a> : null}
-              >
+              <Field label="Password">
                 <div className="relative">
-                  <input className="input pr-10" type={show ? "text" : "password"} placeholder="••••••••" />
+                  <input
+                    className="input pr-10"
+                    required
+                    minLength={8}
+                    type={show ? "text" : "password"}
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    placeholder="••••••••"
+                  />
                   <button
                     type="button"
                     onClick={() => setShow((s) => !s)}
@@ -124,8 +185,8 @@ export function AuthShell({ mode }: { mode: "login" | "signup" }) {
                 </div>
               </Field>
 
-              <button type="submit" className="btn-primary mt-2 h-12">
-                {isLogin ? "Sign in" : "Create account"} <ArrowRight weight="bold" size={16} />
+              <button type="submit" disabled={busy} className="btn-primary mt-2 h-12">
+                {busy ? <CircleNotch className="animate-spin" size={16} /> : <>{isLogin ? "Sign in" : "Create account"} <ArrowRight weight="bold" size={16} /></>}
               </button>
             </form>
 
@@ -162,11 +223,11 @@ export function AuthShell({ mode }: { mode: "login" | "signup" }) {
   );
 }
 
-function Field({ label, children, right }: { label: string; children: React.ReactNode; right?: React.ReactNode }) {
+function Field({ label, children }: { label: string; children: React.ReactNode }) {
   return (
     <label className="grid gap-1.5">
       <span className="flex items-center justify-between text-xs uppercase tracking-[0.14em] text-muted-foreground">
-        {label} {right}
+        {label}
       </span>
       {children}
     </label>

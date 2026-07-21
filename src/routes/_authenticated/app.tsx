@@ -1,5 +1,6 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
-import { useEffect, useState } from "react";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { useEffect, useMemo, useState } from "react";
+import { toast } from "sonner";
 import {
   Hash as HashIcon,
   SquaresFour,
@@ -37,9 +38,16 @@ import {
   CaretDoubleRight,
   Sliders,
   DownloadSimple,
+  LinkSimple,
+  SignOut,
+  Trash,
+  CircleNotch,
+  WarningCircle,
 } from "@phosphor-icons/react";
+import { useClips, type ClipRow } from "@/hooks/use-clips";
+import { useSession, signOut, displayName } from "@/lib/auth";
 
-export const Route = createFileRoute("/app")({
+export const Route = createFileRoute("/_authenticated/app")({
   component: AppShell,
   head: () => ({
     meta: [
@@ -81,13 +89,14 @@ function AppShell() {
         <TopBar />
         <main className="grid min-w-0 flex-1 gap-4 p-4 lg:grid-cols-[minmax(0,1fr)_360px] lg:p-6">
           <div className="flex min-w-0 flex-col gap-4">
+            <NewClipBar />
             <LivePlayer snatching={snatching} onSnatch={triggerSnatch} />
             <MomentTimeline />
-            <ClipStrip />
+            <RealClipsStrip />
           </div>
           <aside className="flex min-w-0 flex-col gap-4">
+            <RealQueuePanel />
             <ChatPanel />
-            <QueuePanel />
           </aside>
         </main>
       </div>
@@ -196,23 +205,38 @@ function SidebarNav({ collapsed, setCollapsed }: { collapsed: boolean; setCollap
       </div>
 
       {/* User card */}
-      <div className="border-t border-border p-3">
-        <div className={`flex items-center gap-3 rounded-lg p-2 hover:bg-surface-2 ${collapsed ? "justify-center" : ""}`}>
-          <div className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-primary text-primary-foreground font-display text-lg">m</div>
-          {!collapsed && (
-            <div className="min-w-0 flex-1">
-              <p className="truncate text-sm font-medium">Mira Okafor</p>
-              <p className="truncate text-[11px] text-muted-foreground">Creator · 342/500 clips</p>
-            </div>
-          )}
-          {!collapsed && (
-            <button className="text-muted-foreground hover:text-foreground">
-              <DotsThreeVertical size={16} />
-            </button>
-          )}
-        </div>
-      </div>
+      <UserCard collapsed={collapsed} />
     </nav>
+  );
+}
+
+function UserCard({ collapsed }: { collapsed: boolean }) {
+  const { user } = useSession();
+  const navigate = useNavigate();
+  const name = displayName(user);
+  const initial = (name[0] || "h").toUpperCase();
+  async function handleSignOut() {
+    await signOut();
+    toast.success("Signed out");
+    navigate({ to: "/" });
+  }
+  return (
+    <div className="border-t border-border p-3">
+      <div className={`flex items-center gap-3 rounded-lg p-2 hover:bg-surface-2 ${collapsed ? "justify-center" : ""}`}>
+        <div className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-primary text-primary-foreground font-display text-lg">{initial}</div>
+        {!collapsed && (
+          <div className="min-w-0 flex-1">
+            <p className="truncate text-sm font-medium">{name || "Signed in"}</p>
+            <p className="truncate text-[11px] text-muted-foreground">{user?.email}</p>
+          </div>
+        )}
+        {!collapsed && (
+          <button onClick={handleSignOut} title="Sign out" className="text-muted-foreground hover:text-foreground">
+            <SignOut size={16} />
+          </button>
+        )}
+      </div>
+    </div>
   );
 }
 
@@ -622,4 +646,254 @@ function Toast({ text }: { text: string }) {
       </div>
     </div>
   );
+}
+
+/* ---------------- NEW CLIP BAR (real) ---------------- */
+function sourceIcon(source: string) {
+  if (source === "twitch") return TwitchLogo;
+  if (source === "youtube") return YoutubeLogo;
+  if (source === "tiktok") return TiktokLogo;
+  if (source === "kick") return Broadcast;
+  return LinkSimple;
+}
+function sourceLabel(source: string) {
+  if (source === "twitch") return "Twitch";
+  if (source === "youtube") return "YouTube";
+  if (source === "tiktok") return "TikTok";
+  if (source === "kick") return "Kick";
+  return "Link";
+}
+
+function NewClipBar() {
+  const { createClip, creating } = useClips();
+  const [url, setUrl] = useState("");
+  const [duration, setDuration] = useState(60);
+  const [aspect, setAspect] = useState<"9:16" | "1:1" | "16:9">("9:16");
+  const [captions, setCaptions] = useState(true);
+  const [autoPost, setAutoPost] = useState(false);
+
+  async function submit(e: React.FormEvent) {
+    e.preventDefault();
+    if (!url.trim()) return;
+    try {
+      await createClip({ source_url: url.trim(), duration_seconds: duration, aspect, captions, auto_post_tiktok: autoPost });
+      toast.success("Clip queued", { description: "We'll ping you when it lands." });
+      setUrl("");
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Failed to create clip");
+    }
+  }
+
+  return (
+    <section className="rounded-3xl border border-border-strong bg-surface p-4 lg:p-5" style={{ boxShadow: "var(--shadow-card)" }}>
+      <div className="flex items-center justify-between">
+        <div>
+          <p className="text-[10px] uppercase tracking-[0.18em] text-muted-foreground">New clip</p>
+          <h3 className="font-display mt-1 text-2xl">Paste any stream or video URL.</h3>
+        </div>
+        <span className="chip !py-0.5 hidden sm:inline-flex"><Sparkle size={11} className="text-primary" /> Auto-detects source</span>
+      </div>
+
+      <form onSubmit={submit} className="mt-4 grid gap-3">
+        <div className="flex items-center gap-2 rounded-2xl border border-border-strong bg-surface-2 px-3 focus-within:border-primary/60">
+          <LinkSimple size={16} className="text-muted-foreground" />
+          <input
+            value={url}
+            onChange={(e) => setUrl(e.target.value)}
+            placeholder="https://twitch.tv/vexy_live  ·  youtu.be/…  ·  kick.com/…"
+            className="h-12 flex-1 bg-transparent text-sm outline-none placeholder:text-muted-foreground"
+          />
+          <button type="submit" disabled={creating || !url.trim()} className="btn-primary !h-9 !px-4 text-xs">
+            {creating ? <CircleNotch className="animate-spin" size={14} /> : <Scissors weight="bold" size={14} />}
+            {creating ? "Queuing" : "Clip it"}
+          </button>
+        </div>
+
+        <div className="flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
+          <SelectPill label="Duration">
+            <select value={duration} onChange={(e) => setDuration(Number(e.target.value))} className="bg-transparent outline-none">
+              <option value={15}>15s</option>
+              <option value={30}>30s</option>
+              <option value={60}>60s</option>
+              <option value={90}>90s</option>
+              <option value={120}>120s</option>
+            </select>
+          </SelectPill>
+          <SelectPill label="Aspect">
+            <select value={aspect} onChange={(e) => setAspect(e.target.value as "9:16" | "1:1" | "16:9")} className="bg-transparent outline-none">
+              <option value="9:16">9:16</option>
+              <option value="1:1">1:1</option>
+              <option value="16:9">16:9</option>
+            </select>
+          </SelectPill>
+          <TogglePill icon={<ClosedCaptioning size={12} />} label="Burn captions" checked={captions} onChange={setCaptions} />
+          <TogglePill icon={<TiktokLogo weight="fill" size={12} />} label="Auto-post to TikTok" checked={autoPost} onChange={setAutoPost} />
+        </div>
+
+        <p className="flex items-center gap-1.5 text-[11px] text-muted-foreground">
+          <WarningCircle size={12} /> Live-stream buffering + real render pipeline runs on an external worker; this demo simulates the pipeline end-to-end.
+        </p>
+      </form>
+    </section>
+  );
+}
+
+function SelectPill({ label, children }: { label: string; children: React.ReactNode }) {
+  return (
+    <div className="flex items-center gap-2 rounded-full border border-border bg-surface px-3 py-1.5">
+      <span className="text-[10px] uppercase tracking-[0.14em]">{label}</span>
+      <span className="text-foreground">{children}</span>
+    </div>
+  );
+}
+function TogglePill({ icon, label, checked, onChange }: { icon: React.ReactNode; label: string; checked: boolean; onChange: (v: boolean) => void }) {
+  return (
+    <button
+      type="button"
+      onClick={() => onChange(!checked)}
+      className={`flex items-center gap-1.5 rounded-full border px-3 py-1.5 transition ${
+        checked ? "border-primary/60 bg-primary/10 text-primary" : "border-border bg-surface text-muted-foreground hover:text-foreground"
+      }`}
+    >
+      {icon}
+      <span className="text-[11px] font-medium">{label}</span>
+    </button>
+  );
+}
+
+/* ---------------- REAL QUEUE ---------------- */
+function statusChipClass(s: ClipRow["status"]) {
+  if (s === "done") return "!border-primary/40 !text-primary";
+  if (s === "failed") return "!border-live/40 !text-live";
+  if (s === "posting") return "!border-primary/40 !text-primary";
+  return "";
+}
+function statusIcon(s: ClipRow["status"]) {
+  if (s === "posting") return <Lightning weight="fill" size={10} />;
+  if (s === "captioning") return <ClosedCaptioning size={10} />;
+  if (s === "rendering") return <Waveform size={10} />;
+  if (s === "downloading") return <DownloadSimple size={10} />;
+  if (s === "done") return <CheckCircle weight="fill" size={10} />;
+  if (s === "failed") return <WarningCircle weight="fill" size={10} />;
+  return <Timer size={10} />;
+}
+
+function RealQueuePanel() {
+  const { clips, isLoading } = useClips();
+  const inflight = useMemo(() => clips.filter((c) => c.status !== "done" && c.status !== "failed"), [clips]);
+  return (
+    <section className="flex flex-col overflow-hidden rounded-3xl border border-border bg-surface" style={{ boxShadow: "var(--shadow-card)" }}>
+      <div className="flex items-center justify-between border-b border-border px-4 py-3">
+        <div className="flex items-center gap-2">
+          <Waveform weight="duotone" size={18} className="text-primary" />
+          <h3 className="text-sm font-semibold">Render queue</h3>
+        </div>
+        <span className="chip !py-0.5">{inflight.length} in flight</span>
+      </div>
+
+      {isLoading ? (
+        <div className="p-6 text-center text-xs text-muted-foreground"><CircleNotch className="mx-auto animate-spin" size={16} /></div>
+      ) : inflight.length === 0 ? (
+        <div className="p-6 text-center text-xs text-muted-foreground">Queue is quiet. Drop a URL above to start.</div>
+      ) : (
+        <ul className="divide-y divide-border">
+          {inflight.map((it) => {
+            const Icon = sourceIcon(it.source);
+            return (
+              <li key={it.id} className="p-4">
+                <div className="flex items-start justify-between gap-3">
+                  <div className="min-w-0">
+                    <div className="flex items-center gap-2">
+                      <Icon weight="fill" size={11} className="text-muted-foreground" />
+                      <span className="font-mono text-[10px] text-muted-foreground">{it.id.slice(0, 6)}</span>
+                      <span className={`chip !py-0.5 !text-[10px] ${statusChipClass(it.status)}`}>
+                        {statusIcon(it.status)} {it.status}
+                      </span>
+                    </div>
+                    <p className="mt-1.5 truncate text-sm font-medium">{it.title || it.source_url}</p>
+                    <p className="mt-0.5 text-[11px] text-muted-foreground">→ {it.aspect} · {it.duration_seconds}s {it.auto_post_tiktok && "· TikTok"}</p>
+                  </div>
+                </div>
+                <div className="mt-3 h-1.5 overflow-hidden rounded-full bg-surface-2">
+                  <div className="h-full rounded-full bg-primary transition-all" style={{ width: `${it.progress}%` }} />
+                </div>
+              </li>
+            );
+          })}
+        </ul>
+      )}
+    </section>
+  );
+}
+
+/* ---------------- REAL RECENT STRIP ---------------- */
+function RealClipsStrip() {
+  const { clips, deleteClip } = useClips();
+  const done = clips.filter((c) => c.status === "done" || c.status === "failed").slice(0, 5);
+  return (
+    <section className="rounded-3xl border border-border bg-surface p-5" style={{ boxShadow: "var(--shadow-card)" }}>
+      <div className="flex items-center justify-between">
+        <div>
+          <p className="text-[10px] uppercase tracking-[0.18em] text-muted-foreground">Just shipped</p>
+          <h3 className="font-display mt-1 text-2xl">Recent clips</h3>
+        </div>
+        <span className="chip !py-0.5">{clips.length} total</span>
+      </div>
+
+      {done.length === 0 ? (
+        <div className="mt-6 rounded-2xl border border-dashed border-border p-8 text-center text-sm text-muted-foreground">
+          Your finished clips will appear here.
+        </div>
+      ) : (
+        <div className="mt-5 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">
+          {done.map((c, i) => {
+            const Icon = sourceIcon(c.source);
+            const ago = timeAgo(c.created_at);
+            return (
+              <div key={c.id} className="group relative overflow-hidden rounded-2xl border border-border bg-surface-2">
+                <div className="relative aspect-[9/16] w-full">
+                  <div className="absolute inset-0" style={{
+                    background: `linear-gradient(${140 + i * 20}deg, oklch(0.3 0.1 ${240 + i * 30}), oklch(0.16 0.02 260))`,
+                  }} />
+                  <div className="absolute inset-0 grid-lines opacity-30" />
+                  <div className="absolute inset-x-2 bottom-2 flex items-center justify-between">
+                    <span className="rounded-full bg-black/60 px-2 py-0.5 text-[10px] backdrop-blur">{ago}</span>
+                    <span className="grid h-6 w-6 place-items-center rounded-full bg-black/60 backdrop-blur">
+                      <Icon weight="fill" size={11} />
+                    </span>
+                  </div>
+                </div>
+                <div className="flex items-start justify-between gap-2 p-3">
+                  <div className="min-w-0">
+                    <p className="truncate text-xs font-medium">{c.title || sourceLabel(c.source) + " clip"}</p>
+                    <p className="mt-0.5 flex items-center gap-1 text-[10px] text-muted-foreground">
+                      {c.status === "done" ? <CheckCircle size={10} className="text-primary" /> : <WarningCircle size={10} className="text-live" />}
+                      {c.aspect} · {c.duration_seconds}s
+                    </p>
+                  </div>
+                  <button
+                    onClick={() => deleteClip(c.id)}
+                    className="text-muted-foreground opacity-0 transition group-hover:opacity-100 hover:text-live"
+                    title="Delete"
+                  >
+                    <Trash size={12} />
+                  </button>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      )}
+    </section>
+  );
+}
+
+function timeAgo(iso: string) {
+  const s = Math.max(1, Math.floor((Date.now() - new Date(iso).getTime()) / 1000));
+  if (s < 60) return `${s}s`;
+  const m = Math.floor(s / 60);
+  if (m < 60) return `${m}m`;
+  const h = Math.floor(m / 60);
+  if (h < 24) return `${h}h`;
+  return `${Math.floor(h / 24)}d`;
 }
