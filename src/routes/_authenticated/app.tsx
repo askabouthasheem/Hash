@@ -89,13 +89,14 @@ function AppShell() {
         <TopBar />
         <main className="grid min-w-0 flex-1 gap-4 p-4 lg:grid-cols-[minmax(0,1fr)_360px] lg:p-6">
           <div className="flex min-w-0 flex-col gap-4">
+            <NewClipBar />
             <LivePlayer snatching={snatching} onSnatch={triggerSnatch} />
             <MomentTimeline />
-            <ClipStrip />
+            <RealClipsStrip />
           </div>
           <aside className="flex min-w-0 flex-col gap-4">
+            <RealQueuePanel />
             <ChatPanel />
-            <QueuePanel />
           </aside>
         </main>
       </div>
@@ -204,23 +205,38 @@ function SidebarNav({ collapsed, setCollapsed }: { collapsed: boolean; setCollap
       </div>
 
       {/* User card */}
-      <div className="border-t border-border p-3">
-        <div className={`flex items-center gap-3 rounded-lg p-2 hover:bg-surface-2 ${collapsed ? "justify-center" : ""}`}>
-          <div className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-primary text-primary-foreground font-display text-lg">m</div>
-          {!collapsed && (
-            <div className="min-w-0 flex-1">
-              <p className="truncate text-sm font-medium">Mira Okafor</p>
-              <p className="truncate text-[11px] text-muted-foreground">Creator · 342/500 clips</p>
-            </div>
-          )}
-          {!collapsed && (
-            <button className="text-muted-foreground hover:text-foreground">
-              <DotsThreeVertical size={16} />
-            </button>
-          )}
-        </div>
-      </div>
+      <UserCard collapsed={collapsed} />
     </nav>
+  );
+}
+
+function UserCard({ collapsed }: { collapsed: boolean }) {
+  const { user } = useSession();
+  const navigate = useNavigate();
+  const name = displayName(user);
+  const initial = (name[0] || "h").toUpperCase();
+  async function handleSignOut() {
+    await signOut();
+    toast.success("Signed out");
+    navigate({ to: "/" });
+  }
+  return (
+    <div className="border-t border-border p-3">
+      <div className={`flex items-center gap-3 rounded-lg p-2 hover:bg-surface-2 ${collapsed ? "justify-center" : ""}`}>
+        <div className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-primary text-primary-foreground font-display text-lg">{initial}</div>
+        {!collapsed && (
+          <div className="min-w-0 flex-1">
+            <p className="truncate text-sm font-medium">{name || "Signed in"}</p>
+            <p className="truncate text-[11px] text-muted-foreground">{user?.email}</p>
+          </div>
+        )}
+        {!collapsed && (
+          <button onClick={handleSignOut} title="Sign out" className="text-muted-foreground hover:text-foreground">
+            <SignOut size={16} />
+          </button>
+        )}
+      </div>
+    </div>
   );
 }
 
