@@ -1,5 +1,6 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
-import { useEffect, useState } from "react";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { useEffect, useMemo, useState } from "react";
+import { toast } from "sonner";
 import {
   Hash as HashIcon,
   SquaresFour,
@@ -37,7 +38,14 @@ import {
   CaretDoubleRight,
   Sliders,
   DownloadSimple,
+  LinkSimple,
+  SignOut,
+  Trash,
+  CircleNotch,
+  WarningCircle,
 } from "@phosphor-icons/react";
+import { useClips, type ClipRow } from "@/hooks/use-clips";
+import { useSession, signOut, displayName } from "@/lib/auth";
 
 export const Route = createFileRoute("/_authenticated/app")({
   component: AppShell,
