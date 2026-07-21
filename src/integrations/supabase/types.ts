@@ -14,7 +14,117 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      clips: {
+        Row: {
+          aspect: string
+          auto_post_tiktok: boolean
+          captions: boolean
+          created_at: string
+          duration_seconds: number
+          error: string | null
+          id: string
+          output_url: string | null
+          progress: number
+          source: Database["public"]["Enums"]["clip_source"]
+          source_url: string
+          start_seconds: number | null
+          status: Database["public"]["Enums"]["clip_status"]
+          title: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          aspect?: string
+          auto_post_tiktok?: boolean
+          captions?: boolean
+          created_at?: string
+          duration_seconds?: number
+          error?: string | null
+          id?: string
+          output_url?: string | null
+          progress?: number
+          source?: Database["public"]["Enums"]["clip_source"]
+          source_url: string
+          start_seconds?: number | null
+          status?: Database["public"]["Enums"]["clip_status"]
+          title?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          aspect?: string
+          auto_post_tiktok?: boolean
+          captions?: boolean
+          created_at?: string
+          duration_seconds?: number
+          error?: string | null
+          id?: string
+          output_url?: string | null
+          progress?: number
+          source?: Database["public"]["Enums"]["clip_source"]
+          source_url?: string
+          start_seconds?: number | null
+          status?: Database["public"]["Enums"]["clip_status"]
+          title?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      profiles: {
+        Row: {
+          avatar_url: string | null
+          created_at: string
+          display_name: string | null
+          id: string
+          tiktok_handle: string | null
+          updated_at: string
+        }
+        Insert: {
+          avatar_url?: string | null
+          created_at?: string
+          display_name?: string | null
+          id: string
+          tiktok_handle?: string | null
+          updated_at?: string
+        }
+        Update: {
+          avatar_url?: string | null
+          created_at?: string
+          display_name?: string | null
+          id?: string
+          tiktok_handle?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      tiktok_accounts: {
+        Row: {
+          avatar_url: string | null
+          connected_at: string
+          display_name: string | null
+          id: string
+          open_id: string | null
+          user_id: string
+        }
+        Insert: {
+          avatar_url?: string | null
+          connected_at?: string
+          display_name?: string | null
+          id?: string
+          open_id?: string | null
+          user_id: string
+        }
+        Update: {
+          avatar_url?: string | null
+          connected_at?: string
+          display_name?: string | null
+          id?: string
+          open_id?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
@@ -23,7 +133,15 @@ export type Database = {
       [_ in never]: never
     }
     Enums: {
-      [_ in never]: never
+      clip_source: "twitch" | "youtube" | "kick" | "tiktok" | "other"
+      clip_status:
+        | "queued"
+        | "downloading"
+        | "rendering"
+        | "captioning"
+        | "posting"
+        | "done"
+        | "failed"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -150,6 +268,17 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      clip_source: ["twitch", "youtube", "kick", "tiktok", "other"],
+      clip_status: [
+        "queued",
+        "downloading",
+        "rendering",
+        "captioning",
+        "posting",
+        "done",
+        "failed",
+      ],
+    },
   },
 } as const
