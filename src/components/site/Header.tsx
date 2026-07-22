@@ -27,9 +27,16 @@ export function Header() {
         </nav>
 
         <div className="hidden items-center gap-2 md:flex">
-          <Link to="/login" className="text-sm text-muted-foreground hover:text-foreground transition px-3">Sign in</Link>
-          <Link to="/app" className="btn-primary h-10">Open the deck</Link>
+          {user ? (
+            <Link to="/app" className="btn-primary h-10">Open the deck</Link>
+          ) : (
+            <>
+              <Link to="/login" className="text-sm text-muted-foreground hover:text-foreground transition px-3">Sign in</Link>
+              <Link to="/app" className="btn-primary h-10">Open the deck</Link>
+            </>
+          )}
         </div>
+
 
         <button
           onClick={() => setOpen((o) => !o)}
