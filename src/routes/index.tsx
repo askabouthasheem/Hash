@@ -22,6 +22,7 @@ import {
 import { useState } from "react";
 import { Header } from "../components/site/Header";
 import { Footer } from "../components/site/Footer";
+import liveStreamAsset from "../assets/live-stream.mp4.asset.json";
 
 export const Route = createFileRoute("/")({
   component: Landing,
@@ -128,15 +129,23 @@ function HeroCard() {
         </div>
 
         {/* Fake stream */}
-        <div className="relative aspect-[16/10] w-full overflow-hidden">
+        <div className="relative aspect-[16/10] w-full overflow-hidden bg-black">
+          <video
+            src={liveStreamAsset.url}
+            autoPlay
+            loop
+            muted
+            playsInline
+            className="absolute inset-0 h-full w-full object-cover"
+          />
           <div
-            className="absolute inset-0"
+            className="absolute inset-0 pointer-events-none"
             style={{
               background:
-                "radial-gradient(120% 90% at 20% 10%, oklch(0.35 0.14 300 / 0.9), transparent 60%), radial-gradient(120% 90% at 90% 90%, oklch(0.4 0.18 200 / 0.8), transparent 55%), linear-gradient(180deg, oklch(0.22 0.03 260), oklch(0.14 0.02 260))",
+                "linear-gradient(180deg, oklch(0 0 0 / 0.35) 0%, transparent 30%, transparent 55%, oklch(0 0 0 / 0.75) 100%)",
             }}
           />
-          <div className="absolute inset-0 grid-lines opacity-40" />
+          <div className="absolute inset-0 grid-lines opacity-20 pointer-events-none" />
 
           {/* Streamer chip */}
           <div className="absolute left-4 top-4 flex items-center gap-2 rounded-full border border-white/10 bg-black/40 px-2.5 py-1 backdrop-blur">
