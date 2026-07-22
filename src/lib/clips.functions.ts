@@ -13,6 +13,81 @@ function detectSource(url: string): "twitch" | "youtube" | "kick" | "tiktok" | "
   return "other";
 }
 
+const ASPECT_TO_DIMS: Record<string, { w: number; h: number; ar: string }> = {
+  "9:16": { w: 1080, h: 1920, ar: "9:16" },
+  "1:1": { w: 1080, h: 1080, ar: "1:1" },
+  "16:9": { w: 1920, h: 1080, ar: "16:9" },
+};
+
+async function sha1Hex(input: string): Promise<string> {
+  const buf = await crypto.subtle.digest("SHA-1", new TextEncoder().encode(input));
+  return Array.from(new Uint8Array(buf)).map((b) => b.toString(16).padStart(2, "0")).join("");
+}
+
+type CloudinaryUploadResult = {
+  secure_url: string;
+  public_id: string;
+  duration?: number;
+  eager?: Array<{ secure_url: string; transformation?: string }>;
+  error?: { message: string };
+};
+
+async function renderWithCloudinary(opts: {
+  sourceUrl: string;
+  startSeconds: number;
+  durationSeconds: number;
+  aspect: string;
+  captions: boolean;
+  publicId: string;
+}): Promise<{ output_url: string; public_id: string }> {
+  const cloud = process.env.CLOUDINARY_CLOUD_NAME;
+  const apiKey = process.env.CLOUDINARY_API_KEY;
+  const apiSecret = process.env.CLOUDINARY_API_SECRET;
+  if (!cloud || !apiKey || !apiSecret) throw new Error("Cloudinary is not configured");
+
+  const dims = ASPECT_TO_DIMS[opts.aspect] ?? ASPECT_TO_DIMS["9:16"];
+  const timestamp = Math.floor(Date.now() / 1000);
+  const transformation = [
+    `so_${opts.startSeconds}`,
+    `du_${opts.durationSeconds}`,
+    `c_fill`,
+    `ar_${dims.ar}`,
+    `g_auto`,
+    `w_${dims.w}`,
+    `h_${dims.h}`,
+    `q_auto`,
+    `f_mp4`,
+  ].join(",");
+
+  // Params to sign (alphabetical, excluding file/api_key/signature/resource_type).
+  const signedParams: Record<string, string> = {
+    eager: transformation,
+    eager_async: "false",
+    folder: "hash-clips",
+    public_id: opts.publicId,
+    timestamp: String(timestamp),
+  };
+  const toSign = Object.keys(signedParams).sort().map((k) => `${k}=${signedParams[k]}`).join("&");
+  const signature = await sha1Hex(toSign + apiSecret);
+
+  const form = new FormData();
+  form.set("file", opts.sourceUrl);
+  form.set("api_key", apiKey);
+  form.set("signature", signature);
+  for (const [k, v] of Object.entries(signedParams)) form.set(k, v);
+
+  const res = await fetch(`https://api.cloudinary.com/v1_1/${cloud}/video/upload`, {
+    method: "POST",
+    body: form,
+  });
+  const json = (await res.json()) as CloudinaryUploadResult;
+  if (!res.ok || json.error) {
+    throw new Error(json.error?.message ?? `Cloudinary upload failed (${res.status})`);
+  }
+  const eagerUrl = json.eager?.[0]?.secure_url;
+  return { output_url: eagerUrl ?? json.secure_url, public_id: json.public_id };
+}
+
 export const createClip = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((input: {
@@ -38,6 +113,15 @@ export const createClip = createServerFn({ method: "POST" })
   )
   .handler(async ({ data, context }) => {
     const source = detectSource(data.source_url);
+
+    // Reject platforms we can't yet resolve to a direct video URL. Cloudinary's
+    // remote-fetch upload needs a public MP4/HLS URL, not a YouTube/Twitch page.
+    if (source !== "other") {
+      throw new Error(
+        `${source} links need a downloader (coming next). For now paste a direct .mp4 / .mov / .m3u8 URL.`,
+      );
+    }
+
     const { data: row, error } = await context.supabase
       .from("clips")
       .insert({
@@ -50,13 +134,40 @@ export const createClip = createServerFn({ method: "POST" })
         aspect: data.aspect,
         captions: data.captions,
         auto_post_tiktok: data.auto_post_tiktok,
-        status: "queued",
-        progress: 0,
+        status: "rendering",
+        progress: 10,
       })
       .select("*")
       .single();
     if (error) throw new Error(error.message);
-    return row;
+
+    // Kick the render synchronously — Cloudinary returns the transformed URL
+    // in the same response when eager_async=false.
+    try {
+      const result = await renderWithCloudinary({
+        sourceUrl: data.source_url,
+        startSeconds: data.start_seconds ?? 0,
+        durationSeconds: data.duration_seconds,
+        aspect: data.aspect,
+        captions: data.captions,
+        publicId: row.id,
+      });
+      const { data: done, error: uerr } = await context.supabase
+        .from("clips")
+        .update({ status: "done", progress: 100, output_url: result.output_url, error: null })
+        .eq("id", row.id)
+        .select("*")
+        .single();
+      if (uerr) throw new Error(uerr.message);
+      return done;
+    } catch (e) {
+      const message = e instanceof Error ? e.message : String(e);
+      await context.supabase
+        .from("clips")
+        .update({ status: "failed", progress: 0, error: message })
+        .eq("id", row.id);
+      throw new Error(message);
+    }
   });
 
 export const listClips = createServerFn({ method: "GET" })
@@ -71,42 +182,20 @@ export const listClips = createServerFn({ method: "GET" })
     return data;
   });
 
+// Kept for API compatibility with the polling hook; real work happens in
+// createClip now, so this just returns the current row.
 export const advanceClip = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((input: { id: string }) => z.object({ id: z.string().uuid() }).parse(input))
   .handler(async ({ data, context }) => {
-    // Simulated pipeline advance based on age of the row.
     const { data: row, error } = await context.supabase
       .from("clips")
-      .select("id,status,created_at,source_url")
+      .select("*")
       .eq("id", data.id)
-      .eq("user_id", context.userId)
       .maybeSingle();
     if (error) throw new Error(error.message);
     if (!row) throw new Error("Not found");
-    if (row.status === "done" || row.status === "failed") return row;
-
-    const age = (Date.now() - new Date(row.created_at).getTime()) / 1000;
-    let status: "queued" | "downloading" | "rendering" | "captioning" | "posting" | "done" = "queued";
-    let progress = 0;
-    if (age < 1.2) { status = "downloading"; progress = 15; }
-    else if (age < 2.6) { status = "rendering"; progress = 45; }
-    else if (age < 4.0) { status = "captioning"; progress = 75; }
-    else if (age < 5.5) { status = "posting"; progress = 92; }
-    else { status = "done"; progress = 100; }
-
-    const patch: { status: typeof status; progress: number; output_url?: string } = { status, progress };
-    if (status === "done") {
-      patch.output_url = `https://cdn.hash.local/clips/${row.id}.mp4`;
-    }
-    const { data: updated, error: uerr } = await context.supabase
-      .from("clips")
-      .update(patch)
-      .eq("id", row.id)
-      .select("*")
-      .single();
-    if (uerr) throw new Error(uerr.message);
-    return updated;
+    return row;
   });
 
 export const deleteClip = createServerFn({ method: "POST" })
