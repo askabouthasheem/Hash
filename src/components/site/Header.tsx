@@ -1,9 +1,12 @@
 import { Link } from "@tanstack/react-router";
 import { Hash as HashIcon, List, X } from "@phosphor-icons/react";
 import { useState } from "react";
+import { useSession } from "@/lib/auth";
 
 export function Header() {
   const [open, setOpen] = useState(false);
+  const { user } = useSession();
+
 
   return (
     <header className="sticky top-0 z-40 border-b border-border/60 bg-background/70 backdrop-blur-xl">
