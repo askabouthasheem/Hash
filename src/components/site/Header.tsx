@@ -1,9 +1,12 @@
 import { Link } from "@tanstack/react-router";
 import { Hash as HashIcon, List, X } from "@phosphor-icons/react";
 import { useState } from "react";
+import { useSession } from "@/lib/auth";
 
 export function Header() {
   const [open, setOpen] = useState(false);
+  const { user } = useSession();
+
 
   return (
     <header className="sticky top-0 z-40 border-b border-border/60 bg-background/70 backdrop-blur-xl">
@@ -24,9 +27,16 @@ export function Header() {
         </nav>
 
         <div className="hidden items-center gap-2 md:flex">
-          <Link to="/login" className="text-sm text-muted-foreground hover:text-foreground transition px-3">Sign in</Link>
-          <Link to="/app" className="btn-primary h-10">Open the deck</Link>
+          {user ? (
+            <Link to="/app" className="btn-primary h-10">Open the deck</Link>
+          ) : (
+            <>
+              <Link to="/login" className="text-sm text-muted-foreground hover:text-foreground transition px-3">Sign in</Link>
+              <Link to="/app" className="btn-primary h-10">Open the deck</Link>
+            </>
+          )}
         </div>
+
 
         <button
           onClick={() => setOpen((o) => !o)}
@@ -45,9 +55,16 @@ export function Header() {
             <Link onClick={() => setOpen(false)} to="/pricing" className="rounded-lg px-3 py-2 text-sm hover:bg-surface-2">Pricing</Link>
             <a onClick={() => setOpen(false)} href="/#faq" className="rounded-lg px-3 py-2 text-sm hover:bg-surface-2">FAQ</a>
             <div className="mt-2 flex gap-2">
-              <Link to="/login" className="btn-ghost flex-1 h-10">Sign in</Link>
-              <Link to="/signup" className="btn-primary flex-1 h-10">Start</Link>
+              {user ? (
+                <Link onClick={() => setOpen(false)} to="/app" className="btn-primary flex-1 h-10">Open the deck</Link>
+              ) : (
+                <>
+                  <Link onClick={() => setOpen(false)} to="/login" className="btn-ghost flex-1 h-10">Sign in</Link>
+                  <Link onClick={() => setOpen(false)} to="/signup" className="btn-primary flex-1 h-10">Start</Link>
+                </>
+              )}
             </div>
+
           </div>
         </div>
       )}
