@@ -55,9 +55,16 @@ export function Header() {
             <Link onClick={() => setOpen(false)} to="/pricing" className="rounded-lg px-3 py-2 text-sm hover:bg-surface-2">Pricing</Link>
             <a onClick={() => setOpen(false)} href="/#faq" className="rounded-lg px-3 py-2 text-sm hover:bg-surface-2">FAQ</a>
             <div className="mt-2 flex gap-2">
-              <Link to="/login" className="btn-ghost flex-1 h-10">Sign in</Link>
-              <Link to="/signup" className="btn-primary flex-1 h-10">Start</Link>
+              {user ? (
+                <Link onClick={() => setOpen(false)} to="/app" className="btn-primary flex-1 h-10">Open the deck</Link>
+              ) : (
+                <>
+                  <Link onClick={() => setOpen(false)} to="/login" className="btn-ghost flex-1 h-10">Sign in</Link>
+                  <Link onClick={() => setOpen(false)} to="/signup" className="btn-primary flex-1 h-10">Start</Link>
+                </>
+              )}
             </div>
+
           </div>
         </div>
       )}
