@@ -154,20 +154,6 @@ function HeroCard() {
             <span className="chip !py-0.5 !text-[10px]">FPS · Ranked</span>
           </div>
 
-          {/* Burned caption */}
-          <div className="absolute inset-x-8 bottom-24 text-center">
-            <span
-              className="font-display text-4xl italic"
-              style={{
-                background: "var(--grad-lime)",
-                WebkitBackgroundClip: "text",
-                WebkitTextFillColor: "transparent",
-                textShadow: "0 6px 30px oklch(0.9 0.19 122 / 0.35)",
-              }}
-            >
-              "no way that just happened"
-            </span>
-          </div>
 
           {/* Snatch button */}
           <div className="absolute inset-x-0 bottom-4 flex items-center justify-between px-4">
