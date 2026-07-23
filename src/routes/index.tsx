@@ -22,7 +22,7 @@ import {
 import { useState } from "react";
 import { Header } from "../components/site/Header";
 import { Footer } from "../components/site/Footer";
-import liveStreamAsset from "../assets/live-stream.mp4.asset.json";
+import fortniteclip from "../assets/fortniteclip.mp4";
 
 export const Route = createFileRoute("/")({
   component: Landing,
@@ -131,7 +131,7 @@ function HeroCard() {
         {/* Fake stream */}
         <div className="relative aspect-[16/10] w-full overflow-hidden bg-black">
           <video
-            src={liveStreamAsset.url}
+            src={fortniteclip}
             autoPlay
             loop
             muted
