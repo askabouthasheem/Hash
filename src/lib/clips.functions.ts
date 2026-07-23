@@ -176,7 +176,11 @@ export const createClip = createServerFn({ method: "POST" })
     // .mp4 / .mov / .m3u8 URLs skip the worker.
     let cloudinarySourceUrl = data.source_url;
     let resolvedTitle: string | null = data.title ?? null;
-    if (source !== "other") {
+    if (source === "youtube") {
+      const resolved = await resolveYouTube(data.source_url);
+      cloudinarySourceUrl = resolved.media_url;
+      if (!resolvedTitle && resolved.title) resolvedTitle = resolved.title;
+    } else if (source !== "other") {
       const resolved = await resolveViaWorker(data.source_url);
       cloudinarySourceUrl = resolved.media_url;
       if (!resolvedTitle && resolved.title) resolvedTitle = resolved.title;
