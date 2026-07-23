@@ -97,12 +97,32 @@ type ResolvedMedia = {
   protocol?: string;
 };
 
+async function resolveYouTube(url: string): Promise<ResolvedMedia> {
+  const ytdl = (await import("@distube/ytdl-core")).default;
+  const info = await ytdl.getInfo(url);
+  const isLive = Boolean(info.videoDetails.isLiveContent && info.videoDetails.isLive);
+  const progressive = info.formats.filter(
+    (f) => f.container === "mp4" && f.hasVideo && f.hasAudio && f.url,
+  );
+  progressive.sort((a, b) => (b.height ?? 0) - (a.height ?? 0));
+  const chosen = progressive[0] ?? info.formats.find((f) => f.url);
+  if (!chosen?.url) throw new Error("Couldn't find a playable YouTube format");
+  return {
+    media_url: chosen.url,
+    is_live: isLive,
+    duration: Number(info.videoDetails.lengthSeconds) || undefined,
+    title: info.videoDetails.title,
+    ext: chosen.container ?? "mp4",
+    protocol: "https",
+  };
+}
+
 async function resolveViaWorker(url: string): Promise<ResolvedMedia> {
   const workerUrl = process.env.YTDLP_WORKER_URL;
   const workerSecret = process.env.YTDLP_WORKER_SECRET;
   if (!workerUrl || !workerSecret) {
     throw new Error(
-      "The yt-dlp worker isn't configured yet. Deploy workers/ytdlp and set YTDLP_WORKER_URL / YTDLP_WORKER_SECRET.",
+      "Twitch, Kick, and TikTok need the yt-dlp worker. YouTube works out of the box — for the others, deploy workers/ytdlp and set YTDLP_WORKER_URL / YTDLP_WORKER_SECRET.",
     );
   }
   const res = await fetch(`${workerUrl.replace(/\/$/, "")}/resolve`, {
