@@ -169,7 +169,7 @@ export const createClip = createServerFn({ method: "POST" })
         user_id: context.userId,
         source_url: data.source_url,
         source,
-        title: data.title ?? null,
+        title: resolvedTitle,
         start_seconds: data.start_seconds ?? null,
         duration_seconds: data.duration_seconds,
         aspect: data.aspect,
@@ -186,7 +186,7 @@ export const createClip = createServerFn({ method: "POST" })
     // in the same response when eager_async=false.
     try {
       const result = await renderWithCloudinary({
-        sourceUrl: data.source_url,
+        sourceUrl: cloudinarySourceUrl,
         startSeconds: data.start_seconds ?? 0,
         durationSeconds: data.duration_seconds,
         aspect: data.aspect,
