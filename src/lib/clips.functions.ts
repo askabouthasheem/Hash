@@ -88,6 +88,42 @@ async function renderWithCloudinary(opts: {
   return { output_url: eagerUrl ?? json.secure_url, public_id: json.public_id };
 }
 
+type ResolvedMedia = {
+  media_url: string;
+  is_live: boolean;
+  duration?: number;
+  title?: string;
+  ext?: string;
+  protocol?: string;
+};
+
+async function resolveViaWorker(url: string): Promise<ResolvedMedia> {
+  const workerUrl = process.env.YTDLP_WORKER_URL;
+  const workerSecret = process.env.YTDLP_WORKER_SECRET;
+  if (!workerUrl || !workerSecret) {
+    throw new Error(
+      "The yt-dlp worker isn't configured yet. Deploy workers/ytdlp and set YTDLP_WORKER_URL / YTDLP_WORKER_SECRET.",
+    );
+  }
+  const res = await fetch(`${workerUrl.replace(/\/$/, "")}/resolve`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${workerSecret}`,
+    },
+    body: JSON.stringify({ url, prefer: "mp4" }),
+  });
+  const text = await res.text();
+  if (!res.ok) {
+    throw new Error(`Couldn't resolve that link (${res.status}): ${text.slice(0, 200)}`);
+  }
+  try {
+    return JSON.parse(text) as ResolvedMedia;
+  } catch {
+    throw new Error("Resolver returned an unexpected response");
+  }
+}
+
 export const createClip = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((input: {
@@ -114,13 +150,18 @@ export const createClip = createServerFn({ method: "POST" })
   .handler(async ({ data, context }) => {
     const source = detectSource(data.source_url);
 
-    // Reject platforms we can't yet resolve to a direct video URL. Cloudinary's
-    // remote-fetch upload needs a public MP4/HLS URL, not a YouTube/Twitch page.
+    // For social platforms (YouTube / Twitch / Kick / TikTok), route through
+    // the yt-dlp worker to turn the page URL into a direct media URL that
+    // Cloudinary's remote-fetch upload can actually consume. Direct
+    // .mp4 / .mov / .m3u8 URLs skip the worker.
+    let cloudinarySourceUrl = data.source_url;
+    let resolvedTitle: string | null = data.title ?? null;
     if (source !== "other") {
-      throw new Error(
-        `${source} links need a downloader (coming next). For now paste a direct .mp4 / .mov / .m3u8 URL.`,
-      );
+      const resolved = await resolveViaWorker(data.source_url);
+      cloudinarySourceUrl = resolved.media_url;
+      if (!resolvedTitle && resolved.title) resolvedTitle = resolved.title;
     }
+
 
     const { data: row, error } = await context.supabase
       .from("clips")
@@ -128,7 +169,7 @@ export const createClip = createServerFn({ method: "POST" })
         user_id: context.userId,
         source_url: data.source_url,
         source,
-        title: data.title ?? null,
+        title: resolvedTitle,
         start_seconds: data.start_seconds ?? null,
         duration_seconds: data.duration_seconds,
         aspect: data.aspect,
@@ -145,7 +186,7 @@ export const createClip = createServerFn({ method: "POST" })
     // in the same response when eager_async=false.
     try {
       const result = await renderWithCloudinary({
-        sourceUrl: data.source_url,
+        sourceUrl: cloudinarySourceUrl,
         startSeconds: data.start_seconds ?? 0,
         durationSeconds: data.duration_seconds,
         aspect: data.aspect,
