@@ -498,11 +498,11 @@ function StatsBanner() {
   return (
     <section className="border-y border-border bg-surface/40 py-16">
       <div className="mx-auto grid max-w-7xl grid-cols-2 gap-8 px-5 lg:grid-cols-4 lg:px-8">
-        {stats.map((s) => (
-          <div key={s.k}>
+        {stats.map((s, i) => (
+          <Reveal key={s.k} direction="up" delay={i * 90}>
             <p className="font-display text-5xl md:text-6xl text-primary">{s.k}</p>
             <p className="mt-2 text-xs uppercase tracking-[0.14em] text-muted-foreground">{s.v}</p>
-          </div>
+          </Reveal>
         ))}
       </div>
     </section>
