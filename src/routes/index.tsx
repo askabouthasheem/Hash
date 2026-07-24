@@ -404,7 +404,7 @@ function Workflow() {
 
         <ol className="relative border-l border-border-strong pl-8">
           {rows.map((r, i) => (
-            <li key={i} className="relative pb-10 last:pb-0">
+            <Reveal as="li" key={i} direction="up" delay={i * 90} className="relative pb-10 last:pb-0">
               <span className="absolute -left-[41px] top-1 grid h-8 w-8 place-items-center rounded-full border border-border-strong bg-background">
                 <r.icon size={14} className="text-primary" />
               </span>
@@ -413,7 +413,7 @@ function Workflow() {
                 <span className="font-mono text-xs text-muted-foreground">{r.t}</span>
               </div>
               <p className="mt-1 text-sm text-muted-foreground">{r.detail}</p>
-            </li>
+            </Reveal>
           ))}
         </ol>
       </div>
