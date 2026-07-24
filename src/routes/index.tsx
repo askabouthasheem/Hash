@@ -472,14 +472,14 @@ function Features() {
         </div>
 
         <div className="mt-14 grid gap-px overflow-hidden rounded-3xl border border-border bg-border md:grid-cols-2 lg:grid-cols-3">
-          {feats.map((f) => (
-            <div key={f.title} className="group flex flex-col gap-4 bg-background p-8 transition hover:bg-surface">
+          {feats.map((f, i) => (
+            <Reveal key={f.title} direction="up" delay={(i % 3) * 100} className="group flex flex-col gap-4 bg-background p-8 transition hover:bg-surface">
               <span className="grid h-10 w-10 place-items-center rounded-xl bg-surface-2 text-primary">
                 <f.icon weight="duotone" size={20} />
               </span>
               <h3 className="font-display text-2xl leading-tight">{f.title}</h3>
               <p className="text-sm text-muted-foreground">{f.body}</p>
-            </div>
+            </Reveal>
           ))}
         </div>
       </div>
