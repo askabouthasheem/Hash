@@ -19,9 +19,11 @@ import {
   CaretDown,
   CheckCircle,
 } from "@phosphor-icons/react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Header } from "../components/site/Header";
 import { Footer } from "../components/site/Footer";
+import { Reveal } from "../components/site/Reveal";
+import { useSmoothScroll } from "../hooks/use-smooth-scroll";
 import fortniteclip from "../assets/fortniteclip.mp4";
 
 export const Route = createFileRoute("/")({
@@ -39,8 +41,10 @@ export const Route = createFileRoute("/")({
 });
 
 function Landing() {
+  useSmoothScroll();
   return (
     <div className="relative min-h-screen bg-background text-foreground">
+      <ScrollProgress />
       <Header />
       <Hero />
       <LogoStrip />
@@ -52,6 +56,34 @@ function Landing() {
       <FAQ />
       <FinalCTA />
       <Footer />
+    </div>
+  );
+}
+
+/* ---------------- SCROLL PROGRESS ---------------- */
+function ScrollProgress() {
+  const [p, setP] = useState(0);
+  useEffect(() => {
+    const onScroll = () => {
+      const h = document.documentElement;
+      const max = h.scrollHeight - h.clientHeight;
+      setP(max > 0 ? (h.scrollTop || window.scrollY) / max : 0);
+    };
+    onScroll();
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
+  }, []);
+  return (
+    <div className="pointer-events-none fixed inset-x-0 top-0 z-50 h-[2px] bg-transparent">
+      <div
+        className="h-full origin-left"
+        style={{
+          transform: `scaleX(${p})`,
+          background: "var(--grad-lime)",
+          boxShadow: "0 0 18px oklch(0.9 0.19 122 / 0.6)",
+          transition: "transform 0.15s linear",
+        }}
+      />
     </div>
   );
 }
@@ -250,6 +282,7 @@ function SnatchDemo() {
 
         <div className="mt-14 grid gap-4 lg:grid-cols-3">
           <DemoCard
+            delay={0}
             step="01"
             icon={<Broadcast weight="duotone" size={22} />}
             title="Watch the stream"
@@ -270,6 +303,7 @@ function SnatchDemo() {
             }
           />
           <DemoCard
+            delay={120}
             step="02"
             icon={<Scissors weight="duotone" size={22} />}
             title="Snatch the moment"
@@ -285,6 +319,7 @@ function SnatchDemo() {
             }
           />
           <DemoCard
+            delay={240}
             step="03"
             icon={<TiktokLogo weight="duotone" size={22} />}
             title="Auto-ship to TikTok"
@@ -308,30 +343,32 @@ function SnatchDemo() {
   );
 }
 
-function DemoCard({ step, icon, title, body, visual, highlight }: {
-  step: string; icon: React.ReactNode; title: string; body: string; visual: React.ReactNode; highlight?: boolean;
+function DemoCard({ step, icon, title, body, visual, highlight, delay = 0 }: {
+  step: string; icon: React.ReactNode; title: string; body: string; visual: React.ReactNode; highlight?: boolean; delay?: number;
 }) {
   return (
-    <div
-      className={`group relative flex flex-col gap-5 rounded-3xl border p-6 transition ${
-        highlight
-          ? "border-primary/40 bg-gradient-to-b from-primary/10 to-transparent"
-          : "border-border bg-surface hover:border-border-strong"
-      }`}
-      style={{ boxShadow: highlight ? "var(--shadow-glow)" : "var(--shadow-card)" }}
-    >
-      <div className="flex items-center justify-between">
-        <span className="font-mono text-xs text-muted-foreground">{step}</span>
-        <span className={`grid h-9 w-9 place-items-center rounded-xl ${highlight ? "bg-primary text-primary-foreground" : "bg-surface-2 text-foreground"}`}>
-          {icon}
-        </span>
+    <Reveal direction="up" delay={delay}>
+      <div
+        className={`group relative flex flex-col gap-5 rounded-3xl border p-6 transition ${
+          highlight
+            ? "border-primary/40 bg-gradient-to-b from-primary/10 to-transparent"
+            : "border-border bg-surface hover:border-border-strong"
+        }`}
+        style={{ boxShadow: highlight ? "var(--shadow-glow)" : "var(--shadow-card)" }}
+      >
+        <div className="flex items-center justify-between">
+          <span className="font-mono text-xs text-muted-foreground">{step}</span>
+          <span className={`grid h-9 w-9 place-items-center rounded-xl ${highlight ? "bg-primary text-primary-foreground" : "bg-surface-2 text-foreground"}`}>
+            {icon}
+          </span>
+        </div>
+        {visual}
+        <div>
+          <h3 className="font-display text-2xl">{title}</h3>
+          <p className="mt-2 text-sm text-muted-foreground">{body}</p>
+        </div>
       </div>
-      {visual}
-      <div>
-        <h3 className="font-display text-2xl">{title}</h3>
-        <p className="mt-2 text-sm text-muted-foreground">{body}</p>
-      </div>
-    </div>
+    </Reveal>
   );
 }
 
@@ -367,7 +404,7 @@ function Workflow() {
 
         <ol className="relative border-l border-border-strong pl-8">
           {rows.map((r, i) => (
-            <li key={i} className="relative pb-10 last:pb-0">
+            <Reveal as="li" key={i} direction="up" delay={i * 90} className="relative pb-10 last:pb-0">
               <span className="absolute -left-[41px] top-1 grid h-8 w-8 place-items-center rounded-full border border-border-strong bg-background">
                 <r.icon size={14} className="text-primary" />
               </span>
@@ -376,7 +413,7 @@ function Workflow() {
                 <span className="font-mono text-xs text-muted-foreground">{r.t}</span>
               </div>
               <p className="mt-1 text-sm text-muted-foreground">{r.detail}</p>
-            </li>
+            </Reveal>
           ))}
         </ol>
       </div>
@@ -435,14 +472,14 @@ function Features() {
         </div>
 
         <div className="mt-14 grid gap-px overflow-hidden rounded-3xl border border-border bg-border md:grid-cols-2 lg:grid-cols-3">
-          {feats.map((f) => (
-            <div key={f.title} className="group flex flex-col gap-4 bg-background p-8 transition hover:bg-surface">
+          {feats.map((f, i) => (
+            <Reveal key={f.title} direction="up" delay={(i % 3) * 100} className="group flex flex-col gap-4 bg-background p-8 transition hover:bg-surface">
               <span className="grid h-10 w-10 place-items-center rounded-xl bg-surface-2 text-primary">
                 <f.icon weight="duotone" size={20} />
               </span>
               <h3 className="font-display text-2xl leading-tight">{f.title}</h3>
               <p className="text-sm text-muted-foreground">{f.body}</p>
-            </div>
+            </Reveal>
           ))}
         </div>
       </div>
@@ -461,11 +498,11 @@ function StatsBanner() {
   return (
     <section className="border-y border-border bg-surface/40 py-16">
       <div className="mx-auto grid max-w-7xl grid-cols-2 gap-8 px-5 lg:grid-cols-4 lg:px-8">
-        {stats.map((s) => (
-          <div key={s.k}>
+        {stats.map((s, i) => (
+          <Reveal key={s.k} direction="up" delay={i * 90}>
             <p className="font-display text-5xl md:text-6xl text-primary">{s.k}</p>
             <p className="mt-2 text-xs uppercase tracking-[0.14em] text-muted-foreground">{s.v}</p>
-          </div>
+          </Reveal>
         ))}
       </div>
     </section>
@@ -489,6 +526,7 @@ function PricingPreview() {
 
         <div className="mt-12 grid gap-4 lg:grid-cols-3">
           <PricingCard
+            delay={0}
             name="Starter"
             price="$0"
             tag="Just seeing"
@@ -496,6 +534,7 @@ function PricingPreview() {
             cta="Start free"
           />
           <PricingCard
+            delay={120}
             name="Creator"
             price="$19"
             tag="Most popular"
@@ -510,6 +549,7 @@ function PricingPreview() {
             cta="Go Creator"
           />
           <PricingCard
+            delay={240}
             name="Studio"
             price="$59"
             tag="For mod teams"
@@ -529,42 +569,44 @@ function PricingPreview() {
 }
 
 function PricingCard({
-  name, price, tag, features, cta, highlight,
-}: { name: string; price: string; tag: string; features: string[]; cta: string; highlight?: boolean }) {
+  name, price, tag, features, cta, highlight, delay = 0,
+}: { name: string; price: string; tag: string; features: string[]; cta: string; highlight?: boolean; delay?: number }) {
   return (
-    <div
-      className={`relative flex flex-col gap-6 rounded-3xl border p-8 ${
-        highlight
-          ? "border-primary/50 bg-gradient-to-b from-primary/10 to-transparent"
-          : "border-border bg-surface"
-      }`}
-      style={{ boxShadow: highlight ? "var(--shadow-glow)" : "var(--shadow-card)" }}
-    >
-      {highlight && (
-        <span className="absolute -top-3 left-6 rounded-full bg-primary px-3 py-1 text-[11px] font-semibold tracking-wide text-primary-foreground">
-          {tag}
-        </span>
-      )}
-      <div>
-        <p className="text-xs uppercase tracking-[0.16em] text-muted-foreground">{name}</p>
-        <div className="mt-3 flex items-baseline gap-2">
-          <span className="font-display text-6xl">{price}</span>
-          <span className="text-sm text-muted-foreground">/ month</span>
+    <Reveal direction="up" delay={delay}>
+      <div
+        className={`relative flex h-full flex-col gap-6 rounded-3xl border p-8 ${
+          highlight
+            ? "border-primary/50 bg-gradient-to-b from-primary/10 to-transparent"
+            : "border-border bg-surface"
+        }`}
+        style={{ boxShadow: highlight ? "var(--shadow-glow)" : "var(--shadow-card)" }}
+      >
+        {highlight && (
+          <span className="absolute -top-3 left-6 rounded-full bg-primary px-3 py-1 text-[11px] font-semibold tracking-wide text-primary-foreground">
+            {tag}
+          </span>
+        )}
+        <div>
+          <p className="text-xs uppercase tracking-[0.16em] text-muted-foreground">{name}</p>
+          <div className="mt-3 flex items-baseline gap-2">
+            <span className="font-display text-6xl">{price}</span>
+            <span className="text-sm text-muted-foreground">/ month</span>
+          </div>
+          {!highlight && <p className="mt-1 text-xs text-muted-foreground">{tag}</p>}
         </div>
-        {!highlight && <p className="mt-1 text-xs text-muted-foreground">{tag}</p>}
+        <ul className="space-y-3">
+          {features.map((f) => (
+            <li key={f} className="flex items-start gap-2 text-sm">
+              <CheckCircle weight="fill" size={16} className="mt-0.5 text-primary shrink-0" />
+              <span>{f}</span>
+            </li>
+          ))}
+        </ul>
+        <Link to="/signup" className={highlight ? "btn-primary mt-auto" : "btn-ghost mt-auto"}>
+          {cta} <ArrowRight weight="bold" size={16} />
+        </Link>
       </div>
-      <ul className="space-y-3">
-        {features.map((f) => (
-          <li key={f} className="flex items-start gap-2 text-sm">
-            <CheckCircle weight="fill" size={16} className="mt-0.5 text-primary shrink-0" />
-            <span>{f}</span>
-          </li>
-        ))}
-      </ul>
-      <Link to="/signup" className={highlight ? "btn-primary mt-auto" : "btn-ghost mt-auto"}>
-        {cta} <ArrowRight weight="bold" size={16} />
-      </Link>
-    </div>
+    </Reveal>
   );
 }
 
@@ -607,19 +649,20 @@ function FAQ() {
           {items.map((it, i) => {
             const isOpen = open === i;
             return (
-              <button
-                key={i}
-                onClick={() => setOpen(isOpen ? null : i)}
-                className="group flex w-full flex-col gap-3 py-6 text-left"
-              >
-                <div className="flex items-center justify-between gap-6">
-                  <h4 className="font-display text-2xl">{it.q}</h4>
-                  <span className={`grid h-9 w-9 shrink-0 place-items-center rounded-full border border-border transition ${isOpen ? "rotate-180 bg-primary text-primary-foreground border-primary" : ""}`}>
-                    <CaretDown weight="bold" size={14} />
-                  </span>
-                </div>
-                {isOpen && <p className="max-w-2xl text-muted-foreground">{it.a}</p>}
-              </button>
+              <Reveal key={i} direction="up" delay={i * 70}>
+                <button
+                  onClick={() => setOpen(isOpen ? null : i)}
+                  className="group flex w-full flex-col gap-3 py-6 text-left"
+                >
+                  <div className="flex items-center justify-between gap-6">
+                    <h4 className="font-display text-2xl">{it.q}</h4>
+                    <span className={`grid h-9 w-9 shrink-0 place-items-center rounded-full border border-border transition ${isOpen ? "rotate-180 bg-primary text-primary-foreground border-primary" : ""}`}>
+                      <CaretDown weight="bold" size={14} />
+                    </span>
+                  </div>
+                  {isOpen && <p className="max-w-2xl text-muted-foreground">{it.a}</p>}
+                </button>
+              </Reveal>
             );
           })}
         </div>
