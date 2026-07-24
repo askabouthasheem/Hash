@@ -569,42 +569,44 @@ function PricingPreview() {
 }
 
 function PricingCard({
-  name, price, tag, features, cta, highlight,
-}: { name: string; price: string; tag: string; features: string[]; cta: string; highlight?: boolean }) {
+  name, price, tag, features, cta, highlight, delay = 0,
+}: { name: string; price: string; tag: string; features: string[]; cta: string; highlight?: boolean; delay?: number }) {
   return (
-    <div
-      className={`relative flex flex-col gap-6 rounded-3xl border p-8 ${
-        highlight
-          ? "border-primary/50 bg-gradient-to-b from-primary/10 to-transparent"
-          : "border-border bg-surface"
-      }`}
-      style={{ boxShadow: highlight ? "var(--shadow-glow)" : "var(--shadow-card)" }}
-    >
-      {highlight && (
-        <span className="absolute -top-3 left-6 rounded-full bg-primary px-3 py-1 text-[11px] font-semibold tracking-wide text-primary-foreground">
-          {tag}
-        </span>
-      )}
-      <div>
-        <p className="text-xs uppercase tracking-[0.16em] text-muted-foreground">{name}</p>
-        <div className="mt-3 flex items-baseline gap-2">
-          <span className="font-display text-6xl">{price}</span>
-          <span className="text-sm text-muted-foreground">/ month</span>
+    <Reveal direction="up" delay={delay}>
+      <div
+        className={`relative flex h-full flex-col gap-6 rounded-3xl border p-8 ${
+          highlight
+            ? "border-primary/50 bg-gradient-to-b from-primary/10 to-transparent"
+            : "border-border bg-surface"
+        }`}
+        style={{ boxShadow: highlight ? "var(--shadow-glow)" : "var(--shadow-card)" }}
+      >
+        {highlight && (
+          <span className="absolute -top-3 left-6 rounded-full bg-primary px-3 py-1 text-[11px] font-semibold tracking-wide text-primary-foreground">
+            {tag}
+          </span>
+        )}
+        <div>
+          <p className="text-xs uppercase tracking-[0.16em] text-muted-foreground">{name}</p>
+          <div className="mt-3 flex items-baseline gap-2">
+            <span className="font-display text-6xl">{price}</span>
+            <span className="text-sm text-muted-foreground">/ month</span>
+          </div>
+          {!highlight && <p className="mt-1 text-xs text-muted-foreground">{tag}</p>}
         </div>
-        {!highlight && <p className="mt-1 text-xs text-muted-foreground">{tag}</p>}
+        <ul className="space-y-3">
+          {features.map((f) => (
+            <li key={f} className="flex items-start gap-2 text-sm">
+              <CheckCircle weight="fill" size={16} className="mt-0.5 text-primary shrink-0" />
+              <span>{f}</span>
+            </li>
+          ))}
+        </ul>
+        <Link to="/signup" className={highlight ? "btn-primary mt-auto" : "btn-ghost mt-auto"}>
+          {cta} <ArrowRight weight="bold" size={16} />
+        </Link>
       </div>
-      <ul className="space-y-3">
-        {features.map((f) => (
-          <li key={f} className="flex items-start gap-2 text-sm">
-            <CheckCircle weight="fill" size={16} className="mt-0.5 text-primary shrink-0" />
-            <span>{f}</span>
-          </li>
-        ))}
-      </ul>
-      <Link to="/signup" className={highlight ? "btn-primary mt-auto" : "btn-ghost mt-auto"}>
-        {cta} <ArrowRight weight="bold" size={16} />
-      </Link>
-    </div>
+    </Reveal>
   );
 }
 
