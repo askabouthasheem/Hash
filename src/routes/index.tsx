@@ -343,30 +343,32 @@ function SnatchDemo() {
   );
 }
 
-function DemoCard({ step, icon, title, body, visual, highlight }: {
-  step: string; icon: React.ReactNode; title: string; body: string; visual: React.ReactNode; highlight?: boolean;
+function DemoCard({ step, icon, title, body, visual, highlight, delay = 0 }: {
+  step: string; icon: React.ReactNode; title: string; body: string; visual: React.ReactNode; highlight?: boolean; delay?: number;
 }) {
   return (
-    <div
-      className={`group relative flex flex-col gap-5 rounded-3xl border p-6 transition ${
-        highlight
-          ? "border-primary/40 bg-gradient-to-b from-primary/10 to-transparent"
-          : "border-border bg-surface hover:border-border-strong"
-      }`}
-      style={{ boxShadow: highlight ? "var(--shadow-glow)" : "var(--shadow-card)" }}
-    >
-      <div className="flex items-center justify-between">
-        <span className="font-mono text-xs text-muted-foreground">{step}</span>
-        <span className={`grid h-9 w-9 place-items-center rounded-xl ${highlight ? "bg-primary text-primary-foreground" : "bg-surface-2 text-foreground"}`}>
-          {icon}
-        </span>
+    <Reveal direction="up" delay={delay}>
+      <div
+        className={`group relative flex flex-col gap-5 rounded-3xl border p-6 transition ${
+          highlight
+            ? "border-primary/40 bg-gradient-to-b from-primary/10 to-transparent"
+            : "border-border bg-surface hover:border-border-strong"
+        }`}
+        style={{ boxShadow: highlight ? "var(--shadow-glow)" : "var(--shadow-card)" }}
+      >
+        <div className="flex items-center justify-between">
+          <span className="font-mono text-xs text-muted-foreground">{step}</span>
+          <span className={`grid h-9 w-9 place-items-center rounded-xl ${highlight ? "bg-primary text-primary-foreground" : "bg-surface-2 text-foreground"}`}>
+            {icon}
+          </span>
+        </div>
+        {visual}
+        <div>
+          <h3 className="font-display text-2xl">{title}</h3>
+          <p className="mt-2 text-sm text-muted-foreground">{body}</p>
+        </div>
       </div>
-      {visual}
-      <div>
-        <h3 className="font-display text-2xl">{title}</h3>
-        <p className="mt-2 text-sm text-muted-foreground">{body}</p>
-      </div>
-    </div>
+    </Reveal>
   );
 }
 
