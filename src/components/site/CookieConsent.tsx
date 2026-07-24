@@ -103,7 +103,7 @@ export function CookieConsent() {
 
             <div className="flex-1 space-y-1.5">
               <div className="flex items-center justify-between">
-                <h3 className="font-sans text-base font-semibold tracking-tight text-foreground">
+                <h3 className="font-display text-xl leading-tight text-foreground">
                   We value your privacy
                 </h3>
                 <button
@@ -163,7 +163,7 @@ export function CookieConsent() {
               <div className="flex items-center gap-2.5">
                 <ShieldCheck size={24} className="text-foreground" weight="bold" />
                 <div>
-                  <h2 className="font-sans text-lg font-semibold tracking-tight text-foreground">
+                  <h2 className="font-display text-2xl leading-tight text-foreground">
                     Cookie Preferences
                   </h2>
                   <p className="text-xs text-muted-foreground">
@@ -185,7 +185,7 @@ export function CookieConsent() {
               <div className="flex items-start justify-between gap-4 rounded-xl border border-border/60 bg-surface/40 p-4">
                 <div className="space-y-1">
                   <div className="flex items-center gap-2">
-                    <span className="text-sm font-medium text-foreground">Strictly Necessary</span>
+                    <span className="font-display text-lg leading-tight text-foreground">Strictly Necessary</span>
                     <span className="chip text-[0.65rem] !py-0.5 !px-2">Required</span>
                   </div>
                   <p className="text-xs leading-relaxed text-muted-foreground">
@@ -200,7 +200,7 @@ export function CookieConsent() {
               {/* Analytics & Performance */}
               <div className="flex items-start justify-between gap-4 rounded-xl border border-border/60 bg-surface/40 p-4">
                 <div className="space-y-1">
-                  <span className="text-sm font-medium text-foreground">Analytics & Performance</span>
+                  <span className="font-display text-lg leading-tight text-foreground">Analytics & Performance</span>
                   <p className="text-xs leading-relaxed text-muted-foreground">
                     Helps us measure stream processing speeds, clipping latency, and platform stability.
                   </p>
@@ -219,7 +219,7 @@ export function CookieConsent() {
               {/* Marketing & Personalization */}
               <div className="flex items-start justify-between gap-4 rounded-xl border border-border/60 bg-surface/40 p-4">
                 <div className="space-y-1">
-                  <span className="text-sm font-medium text-foreground">Marketing & Personalization</span>
+                  <span className="font-display text-lg leading-tight text-foreground">Marketing & Personalization</span>
                   <p className="text-xs leading-relaxed text-muted-foreground">
                     Used to recommend viral clip templates, creator tools, and tailored platform updates.
                   </p>
