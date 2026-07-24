@@ -6,6 +6,7 @@ import {
   GithubLogo,
   TiktokLogo,
 } from "@phosphor-icons/react";
+import { triggerCookiePreferences } from "./CookieConsent";
 
 export function Footer() {
   return (
@@ -71,6 +72,12 @@ export function Footer() {
             <a href="#" className="hover:text-foreground">Privacy</a>
             <a href="#" className="hover:text-foreground">Terms</a>
             <a href="#" className="hover:text-foreground">DMCA</a>
+            <button
+              onClick={triggerCookiePreferences}
+              className="hover:text-foreground cursor-pointer text-left"
+            >
+              Cookies
+            </button>
           </div>
         </div>
       </div>
