@@ -19,9 +19,11 @@ import {
   CaretDown,
   CheckCircle,
 } from "@phosphor-icons/react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Header } from "../components/site/Header";
 import { Footer } from "../components/site/Footer";
+import { Reveal } from "../components/site/Reveal";
+import { useSmoothScroll } from "../hooks/use-smooth-scroll";
 import fortniteclip from "../assets/fortniteclip.mp4";
 
 export const Route = createFileRoute("/")({
