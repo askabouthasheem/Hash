@@ -41,8 +41,10 @@ export const Route = createFileRoute("/")({
 });
 
 function Landing() {
+  useSmoothScroll();
   return (
     <div className="relative min-h-screen bg-background text-foreground">
+      <ScrollProgress />
       <Header />
       <Hero />
       <LogoStrip />
@@ -54,6 +56,34 @@ function Landing() {
       <FAQ />
       <FinalCTA />
       <Footer />
+    </div>
+  );
+}
+
+/* ---------------- SCROLL PROGRESS ---------------- */
+function ScrollProgress() {
+  const [p, setP] = useState(0);
+  useEffect(() => {
+    const onScroll = () => {
+      const h = document.documentElement;
+      const max = h.scrollHeight - h.clientHeight;
+      setP(max > 0 ? (h.scrollTop || window.scrollY) / max : 0);
+    };
+    onScroll();
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
+  }, []);
+  return (
+    <div className="pointer-events-none fixed inset-x-0 top-0 z-50 h-[2px] bg-transparent">
+      <div
+        className="h-full origin-left"
+        style={{
+          transform: `scaleX(${p})`,
+          background: "var(--grad-lime)",
+          boxShadow: "0 0 18px oklch(0.9 0.19 122 / 0.6)",
+          transition: "transform 0.15s linear",
+        }}
+      />
     </div>
   );
 }
