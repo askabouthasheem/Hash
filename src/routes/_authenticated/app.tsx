@@ -325,7 +325,7 @@ function LivePlayer({ snatching, onSnatch }: { snatching: boolean; onSnatch: () 
               background: "var(--grad-lime)",
               WebkitBackgroundClip: "text",
               WebkitTextFillColor: "transparent",
-              textShadow: "0 6px 30px oklch(0.9 0.19 122 / 0.35)",
+              textShadow: "0 6px 30px oklch(0.25 0.02 250 / 0.25)",
             }}
           >
             "bro just clutched the 1v4"

@@ -82,37 +82,37 @@ export function AuthShell({ mode }: { mode: "login" | "signup" }) {
 
   return (
     <div className="grid min-h-screen bg-background lg:grid-cols-2">
-      <aside className="relative hidden overflow-hidden border-r border-border lg:block">
+      <aside className="relative hidden overflow-hidden lg:block [&_*]:!border-white/10 pointer-events-none">
         <div aria-hidden className="absolute inset-0" style={{
-          background: "radial-gradient(80% 60% at 20% 20%, oklch(0.35 0.14 300 / 0.7), transparent 60%), radial-gradient(80% 60% at 90% 90%, oklch(0.9 0.19 122 / 0.35), transparent 60%), linear-gradient(180deg, oklch(0.16 0.02 260), oklch(0.13 0.02 260))"
+          background: "oklch(0.15 0.006 250)",
         }} />
-        <div className="absolute inset-0 grid-lines opacity-30" />
+        <div aria-hidden className="absolute inset-0 grid-lines opacity-40" />
 
-        <div className="relative flex h-full flex-col justify-between p-10">
+        <div className="relative flex h-full flex-col justify-between p-10 text-white">
           <Link to="/" className="flex items-center gap-2">
-            <span className="grid h-8 w-8 place-items-center rounded-lg bg-primary text-primary-foreground">
+            <span className="grid h-8 w-8 place-items-center rounded-lg bg-white/20 text-white">
               <HashIcon weight="bold" size={18} />
             </span>
             <span className="font-display text-2xl">Hash</span>
           </Link>
 
           <div className="max-w-md">
-            <span className="chip">
+            <span className="chip border-white/20 bg-white/10 text-white">
               <span className="h-2 w-2 rounded-full bg-live live-pulse" /> Live · 12,481 clips shipping now
             </span>
-            <h2 className="font-display mt-6 text-5xl leading-[1]">
+            <h2 className="font-display mt-6 text-5xl leading-[1] text-white">
               "We clipped a moment mid-stream, posted to TikTok, and had 40k views before the streamer even hit the ad break."
             </h2>
             <div className="mt-6 flex items-center gap-3">
-              <div className="grid h-10 w-10 place-items-center rounded-full bg-primary text-primary-foreground font-display text-lg">m</div>
+              <div className="grid h-10 w-10 place-items-center rounded-full bg-white/30 text-white font-display text-lg">m</div>
               <div>
-                <p className="text-sm font-medium">Mira Okafor</p>
-                <p className="text-xs text-muted-foreground">Community lead · @vexy_live</p>
+                <p className="text-sm font-medium text-white">Mira Okafor</p>
+                <p className="text-xs text-white/70">Community lead · @vexy_live</p>
               </div>
             </div>
           </div>
 
-          <p className="font-mono text-[11px] uppercase tracking-[0.2em] text-muted-foreground">
+          <p className="font-mono text-[11px] uppercase tracking-[0.2em] text-white/70">
             Live-clip deck · Twitch · Kick · YouTube · TikTok
           </p>
         </div>
@@ -216,7 +216,7 @@ export function AuthShell({ mode }: { mode: "login" | "signup" }) {
         .input::placeholder { color: var(--color-muted-foreground); }
         .input:focus {
           border-color: var(--color-primary);
-          box-shadow: 0 0 0 3px oklch(0.9 0.19 122 / 0.18);
+          box-shadow: 0 0 0 3px oklch(0.25 0.02 250 / 0.18);
         }
       `}</style>
     </div>

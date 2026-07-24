@@ -7,7 +7,7 @@ import {
   Scripts,
   Link,
 } from "@tanstack/react-router";
-import { useEffect, type ReactNode } from "react";
+import { useEffect, useState, type ReactNode } from "react";
 import { Toaster } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -70,7 +70,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
           "Hash is the live-clipping deck for creators. Snatch the last 60s of any Twitch, Kick or YouTube stream, auto-caption vertical, ship straight to TikTok.",
       },
       { name: "author", content: "Hash" },
-      { name: "theme-color", content: "#141516" },
+      { name: "theme-color", content: "#fcfcfd" },
       { property: "og:title", content: "Hash — Clip livestreams the second they pop off" },
       {
         property: "og:description",
@@ -103,7 +103,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
 
 function RootShell({ children }: { children: ReactNode }) {
   return (
-    <html lang="en" className="dark">
+    <html lang="en">
       <head>
         <HeadContent />
       </head>
@@ -129,7 +129,21 @@ function RootComponent() {
   return (
     <QueryClientProvider client={queryClient}>
       <Outlet />
-      <Toaster theme="dark" position="bottom-right" richColors closeButton />
+      <DynamicToaster />
     </QueryClientProvider>
   );
+}
+
+function DynamicToaster() {
+  const [theme, setTheme] = useState<"light" | "dark">("light");
+  useEffect(() => {
+    const check = () => {
+      setTheme(document.documentElement.classList.contains("dark") ? "dark" : "light");
+    };
+    check();
+    const observer = new MutationObserver(check);
+    observer.observe(document.documentElement, { attributes: true, attributeFilter: ["class"] });
+    return () => observer.disconnect();
+  }, []);
+  return <Toaster theme={theme} position="bottom-right" richColors closeButton />;
 }

@@ -79,8 +79,8 @@ function ScrollProgress() {
         className="h-full origin-left"
         style={{
           transform: `scaleX(${p})`,
-          background: "var(--grad-lime)",
-          boxShadow: "0 0 18px oklch(0.9 0.19 122 / 0.6)",
+          background: "oklch(0.25 0.02 250)",
+          boxShadow: "0 0 12px oklch(0.25 0.02 250 / 0.4)",
           transition: "transform 0.15s linear",
         }}
       />
@@ -91,7 +91,8 @@ function ScrollProgress() {
 /* ---------------- HERO ---------------- */
 function Hero() {
   return (
-    <section className="relative overflow-hidden">
+    <Reveal direction="up">
+      <section className="relative overflow-hidden">
       <div
         aria-hidden
         className="pointer-events-none absolute inset-0"
@@ -103,7 +104,7 @@ function Hero() {
         <div className="grid gap-12 lg:grid-cols-[1.15fr_1fr] lg:items-center">
           <div>
             <span className="chip">
-              <span className="relative inline-flex h-2 w-2 rounded-full bg-live live-pulse" />
+              <Lightning weight="fill" size={12} className="text-primary" />
               LIVE SNATCH · v0.9
             </span>
 
@@ -141,6 +142,7 @@ function Hero() {
         </div>
       </div>
     </section>
+    </Reveal>
   );
 }
 
@@ -634,7 +636,7 @@ function FAQ() {
       a: "Yes — one-click posting is the default, but you can pop the clip into the quick editor for trim, caption tweaks, and cover frame before it ships.",
     },
   ];
-  const [open, setOpen] = useState<number | null>(0);
+  const [open, setOpen] = useState<number | null>(null);
   return (
     <section id="faq" className="border-t border-border py-28">
       <div className="mx-auto grid max-w-7xl gap-14 px-5 lg:grid-cols-[1fr_1.4fr] lg:px-8">
@@ -680,7 +682,7 @@ function FinalCTA() {
         className="pointer-events-none absolute inset-0"
         style={{
           background:
-            "radial-gradient(60% 80% at 50% 100%, oklch(0.9 0.19 122 / 0.18), transparent 70%)",
+            "radial-gradient(60% 80% at 50% 100%, oklch(0.25 0.02 250 / 0.08), transparent 70%)",
         }}
       />
       <div className="relative mx-auto max-w-4xl px-5 text-center lg:px-8">

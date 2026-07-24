@@ -1,12 +1,13 @@
 import { Link } from "@tanstack/react-router";
-import { Hash as HashIcon, List, X } from "@phosphor-icons/react";
+import { Hash as HashIcon, List, X, Sun, Moon } from "@phosphor-icons/react";
 import { useState } from "react";
 import { useSession } from "@/lib/auth";
+import { useTheme } from "@/hooks/use-theme";
 
 export function Header() {
   const [open, setOpen] = useState(false);
   const { user } = useSession();
-
+  const { theme, toggle } = useTheme();
 
   return (
     <header className="sticky top-0 z-40 border-b border-border/60 bg-background/70 backdrop-blur-xl">
@@ -27,6 +28,13 @@ export function Header() {
         </nav>
 
         <div className="hidden items-center gap-2 md:flex">
+          <button
+            onClick={toggle}
+            className="grid h-10 w-10 place-items-center rounded-lg border border-border text-muted-foreground hover:text-foreground transition"
+            aria-label={`Switch to ${theme === "light" ? "dark" : "light"} mode`}
+          >
+            {theme === "light" ? <Moon size={16} /> : <Sun size={16} />}
+          </button>
           {user ? (
             <Link to="/app" className="btn-primary h-10">Open the deck</Link>
           ) : (
@@ -38,13 +46,22 @@ export function Header() {
         </div>
 
 
-        <button
-          onClick={() => setOpen((o) => !o)}
-          className="grid h-10 w-10 place-items-center rounded-lg border border-border md:hidden"
-          aria-label="Menu"
-        >
-          {open ? <X size={18} /> : <List size={18} />}
-        </button>
+        <div className="flex items-center gap-2 md:hidden">
+          <button
+            onClick={toggle}
+            className="grid h-10 w-10 place-items-center rounded-lg border border-border text-muted-foreground hover:text-foreground transition"
+            aria-label={`Switch to ${theme === "light" ? "dark" : "light"} mode`}
+          >
+            {theme === "light" ? <Moon size={16} /> : <Sun size={16} />}
+          </button>
+          <button
+            onClick={() => setOpen((o) => !o)}
+            className="grid h-10 w-10 place-items-center rounded-lg border border-border"
+            aria-label="Menu"
+          >
+            {open ? <X size={18} /> : <List size={18} />}
+          </button>
+        </div>
       </div>
 
       {open && (
