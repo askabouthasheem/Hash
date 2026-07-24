@@ -282,6 +282,7 @@ function SnatchDemo() {
 
         <div className="mt-14 grid gap-4 lg:grid-cols-3">
           <DemoCard
+            delay={0}
             step="01"
             icon={<Broadcast weight="duotone" size={22} />}
             title="Watch the stream"
@@ -302,6 +303,7 @@ function SnatchDemo() {
             }
           />
           <DemoCard
+            delay={120}
             step="02"
             icon={<Scissors weight="duotone" size={22} />}
             title="Snatch the moment"
@@ -317,6 +319,7 @@ function SnatchDemo() {
             }
           />
           <DemoCard
+            delay={240}
             step="03"
             icon={<TiktokLogo weight="duotone" size={22} />}
             title="Auto-ship to TikTok"
