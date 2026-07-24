@@ -649,19 +649,20 @@ function FAQ() {
           {items.map((it, i) => {
             const isOpen = open === i;
             return (
-              <button
-                key={i}
-                onClick={() => setOpen(isOpen ? null : i)}
-                className="group flex w-full flex-col gap-3 py-6 text-left"
-              >
-                <div className="flex items-center justify-between gap-6">
-                  <h4 className="font-display text-2xl">{it.q}</h4>
-                  <span className={`grid h-9 w-9 shrink-0 place-items-center rounded-full border border-border transition ${isOpen ? "rotate-180 bg-primary text-primary-foreground border-primary" : ""}`}>
-                    <CaretDown weight="bold" size={14} />
-                  </span>
-                </div>
-                {isOpen && <p className="max-w-2xl text-muted-foreground">{it.a}</p>}
-              </button>
+              <Reveal key={i} direction="up" delay={i * 70}>
+                <button
+                  onClick={() => setOpen(isOpen ? null : i)}
+                  className="group flex w-full flex-col gap-3 py-6 text-left"
+                >
+                  <div className="flex items-center justify-between gap-6">
+                    <h4 className="font-display text-2xl">{it.q}</h4>
+                    <span className={`grid h-9 w-9 shrink-0 place-items-center rounded-full border border-border transition ${isOpen ? "rotate-180 bg-primary text-primary-foreground border-primary" : ""}`}>
+                      <CaretDown weight="bold" size={14} />
+                    </span>
+                  </div>
+                  {isOpen && <p className="max-w-2xl text-muted-foreground">{it.a}</p>}
+                </button>
+              </Reveal>
             );
           })}
         </div>
