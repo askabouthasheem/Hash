@@ -526,6 +526,7 @@ function PricingPreview() {
 
         <div className="mt-12 grid gap-4 lg:grid-cols-3">
           <PricingCard
+            delay={0}
             name="Starter"
             price="$0"
             tag="Just seeing"
@@ -533,6 +534,7 @@ function PricingPreview() {
             cta="Start free"
           />
           <PricingCard
+            delay={120}
             name="Creator"
             price="$19"
             tag="Most popular"
@@ -547,6 +549,7 @@ function PricingPreview() {
             cta="Go Creator"
           />
           <PricingCard
+            delay={240}
             name="Studio"
             price="$59"
             tag="For mod teams"
