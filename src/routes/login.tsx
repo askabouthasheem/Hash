@@ -68,13 +68,29 @@ export function AuthShell({ mode }: { mode: "login" | "signup" }) {
     if (googleBusy) return;
     setGoogleBusy(true);
     try {
+      // 1. Try Lovable Auth Google OAuth
       const result = await lovable.auth.signInWithOAuth("google", {
-        redirect_uri: window.location.origin,
+        redirect_uri: `${window.location.origin}/app`,
       });
-      if (result.error) throw result.error instanceof Error ? result.error : new Error(String(result.error));
+
       if (result.redirected) return;
+
+      if (result.error) {
+        // 2. Fallback to direct Supabase Google OAuth
+        const { error: supabaseError } = await supabase.auth.signInWithOAuth({
+          provider: "google",
+          options: {
+            redirectTo: `${window.location.origin}/app`,
+          },
+        });
+        if (supabaseError) throw result.error instanceof Error ? result.error : supabaseError;
+        return;
+      }
+
+      toast.success("Signed in with Google");
       navigate({ to: "/app" });
     } catch (err) {
+      console.error("Google sign-in error:", err);
       toast.error(err instanceof Error ? err.message : "Google sign-in failed");
     } finally {
       setGoogleBusy(false);
