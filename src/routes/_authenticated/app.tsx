@@ -46,6 +46,7 @@ import {
 } from "@phosphor-icons/react";
 import { useClips, type ClipRow } from "@/hooks/use-clips";
 import { useSession, signOut, displayName } from "@/lib/auth";
+import { Logo } from "@/components/site/Logo";
 
 export const Route = createFileRoute("/_authenticated/app")({
   component: AppShell,
@@ -141,10 +142,7 @@ function SidebarNav({ collapsed, setCollapsed }: { collapsed: boolean; setCollap
     <nav className={`${w} sticky top-0 hidden h-screen shrink-0 flex-col border-r border-border bg-surface/50 transition-[width] duration-200 md:flex`}>
       <div className="flex h-16 items-center justify-between px-4">
         <Link to="/" className="flex items-center gap-2">
-          <span className="grid h-8 w-8 place-items-center rounded-lg bg-primary text-primary-foreground">
-            <HashIcon weight="bold" size={18} />
-          </span>
-          {!collapsed && <span className="font-display text-2xl leading-none">Hash</span>}
+          <Logo iconOnly={collapsed} />
         </Link>
         {!collapsed && (
           <button onClick={() => setCollapsed(true)} className="grid h-8 w-8 place-items-center rounded-md text-muted-foreground hover:bg-surface-2">

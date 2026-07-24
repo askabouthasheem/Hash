@@ -1,8 +1,9 @@
 import { Link } from "@tanstack/react-router";
-import { Hash as HashIcon, List, X, Sun, Moon } from "@phosphor-icons/react";
+import { List, X, Sun, Moon } from "@phosphor-icons/react";
 import { useState } from "react";
 import { useSession } from "@/lib/auth";
 import { useTheme } from "@/hooks/use-theme";
+import { Logo } from "./Logo";
 
 export function Header() {
   const [open, setOpen] = useState(false);
@@ -13,10 +14,7 @@ export function Header() {
     <header className="sticky top-0 z-40 border-b border-border/60 bg-background/70 backdrop-blur-xl">
       <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-5 lg:px-8">
         <Link to="/" className="flex items-center gap-2">
-          <span className="grid h-8 w-8 place-items-center rounded-lg bg-primary text-primary-foreground">
-            <HashIcon weight="bold" size={18} />
-          </span>
-          <span className="font-display text-2xl leading-none">Hash</span>
+          <Logo />
           <span className="chip ml-2 hidden sm:inline-flex">Beta</span>
         </Link>
 

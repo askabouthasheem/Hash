@@ -1,5 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { Hash as HashIcon, ArrowRight, CircleNotch } from "@phosphor-icons/react";
+import { ArrowRight, CircleNotch } from "@phosphor-icons/react";
+import { Logo } from "@/components/site/Logo";
 import { useState } from "react";
 import { toast } from "sonner";
 
@@ -44,11 +45,8 @@ function WaitlistPage() {
         <div aria-hidden className="absolute inset-0 grid-lines opacity-40" />
 
         <div className="relative flex h-full flex-col justify-between p-10 text-white">
-          <a href="/" className="flex items-center gap-2">
-            <span className="grid h-8 w-8 place-items-center rounded-lg bg-white/20 text-white">
-              <HashIcon weight="bold" size={18} />
-            </span>
-            <span className="font-display text-2xl">Hash</span>
+          <a href="/">
+            <Logo />
           </a>
 
           <div className="max-w-md">
@@ -75,11 +73,8 @@ function WaitlistPage() {
 
       <main className="flex flex-col">
         <div className="flex items-center justify-between px-6 py-5 lg:hidden">
-          <a href="/" className="flex items-center gap-2">
-            <span className="grid h-8 w-8 place-items-center rounded-lg bg-primary text-primary-foreground">
-              <HashIcon weight="bold" size={18} />
-            </span>
-            <span className="font-display text-2xl">Hash</span>
+          <a href="/">
+            <Logo />
           </a>
           <a href="/login" className="text-sm text-muted-foreground">
             Sign in

@@ -1,12 +1,12 @@
 import { Link } from "@tanstack/react-router";
 import {
-  Hash as HashIcon,
   TwitterLogo,
   DiscordLogo,
   GithubLogo,
   TiktokLogo,
 } from "@phosphor-icons/react";
 import { triggerCookiePreferences } from "./CookieConsent";
+import { Logo } from "./Logo";
 
 export function Footer() {
   return (
@@ -14,12 +14,7 @@ export function Footer() {
       <div className="mx-auto max-w-7xl px-5 py-16 lg:px-8">
         <div className="grid gap-12 md:grid-cols-[1.4fr_1fr_1fr_1fr]">
           <div>
-            <div className="flex items-center gap-2">
-              <span className="grid h-8 w-8 place-items-center rounded-lg bg-primary text-primary-foreground">
-                <HashIcon weight="bold" size={18} />
-              </span>
-              <span className="font-display text-2xl">Hash</span>
-            </div>
+            <Logo />
             <p className="mt-4 max-w-sm text-sm text-muted-foreground">
               The live-clipping deck for streamers, editors and community mods.
               Turn 60 seconds of chaos into your next viral post.
